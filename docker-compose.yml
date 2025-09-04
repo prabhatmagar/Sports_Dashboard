@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  sports-dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - API_SPORTS_KEY=${API_SPORTS_KEY}
+      - RAPIDAPI_KEY=${RAPIDAPI_KEY}
+      - API_SPORTS_BASE_URL=${API_SPORTS_BASE_URL:-https://v1.american-football.api-sports.io}
+      - RAPIDAPI_HOST=${RAPIDAPI_HOST:-api-football-v1.p.rapidapi.com}
+      - APP_TITLE=${APP_TITLE:-Sports Dashboard}
+      - DEFAULT_TIMEZONE=${DEFAULT_TIMEZONE:-US/Eastern}
+      - CACHE_DURATION=${CACHE_DURATION:-300}
+    volumes:
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
