@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timedelta
 import pytz
 from config import Config
+from dummy_data import DUMMY_DATA
 
 class APISportsClient:
     """Client for API-Sports American Football API"""
@@ -14,35 +15,51 @@ class APISportsClient:
         self.base_url = Config.get_base_url(use_rapidapi)
         self.headers = Config.get_headers(use_rapidapi)
         self.session = requests.Session()
-        self.session.headers.update(self.headers)
+        if self.headers:
+            self.session.headers.update(self.headers)
         
     def _make_request(self, endpoint: str, params: Dict = None) -> Optional[Dict]:
-        """Make API request with error handling and rate limiting"""
-        if not self.headers:
-            return None
+        """Make API request with error handling and rate limiting - using dummy data"""
+        # Use dummy data instead of real API calls
+        if endpoint in DUMMY_DATA:
+            generator_func = DUMMY_DATA[endpoint]
             
-        url = f"{self.base_url}/{endpoint}"
-        
-        try:
-            response = self.session.get(url, params=params, timeout=30)
-            response.raise_for_status()
+            # Extract parameters for dummy data generation
+            league_id = params.get('league', 1) if params else 1
+            season = params.get('season', 2024) if params else 2024
+            date = params.get('date') if params else None
+            team_id = params.get('team') if params else None
+            week = params.get('week') if params else None
+            player_id = params.get('player') if params else None
+            country = params.get('country', 'US') if params else 'US'
             
-            data = response.json()
-            
-            # Handle API-Sports response format
-            if 'response' in data:
-                return data['response']
-            elif 'results' in data:
-                return data['results']
+            # Generate dummy data based on endpoint
+            if endpoint == 'games':
+                return generator_func(league_id, season, date, team_id, week)
+            elif endpoint == 'standings':
+                return generator_func(league_id, season)
+            elif endpoint == 'teams':
+                return generator_func(league_id, season)
+            elif endpoint == 'players':
+                return generator_func(league_id, season, team_id, player_id)
+            elif endpoint == 'odds':
+                return generator_func(league_id, season, date, team_id)
+            elif endpoint == 'leagues':
+                return generator_func(country)
+            elif endpoint == 'injuries':
+                return generator_func(league_id, season, team_id)
+            elif endpoint == 'teams/statistics':
+                return generator_func(league_id, season, team_id)
+            elif endpoint == 'games/events':
+                game_id = params.get('fixture') if params else 1000
+                return generator_func(game_id)
+            elif endpoint == 'games/players':
+                game_id = params.get('fixture') if params else 1000
+                return generator_func(game_id)
             else:
-                return data
-                
-        except requests.exceptions.RequestException as e:
-            st.error(f"API request failed: {str(e)}")
-            return None
-        except Exception as e:
-            st.error(f"Unexpected error: {str(e)}")
-            return None
+                return generator_func()
+        
+        return None
     
     @st.cache_data(ttl=Config.CACHE_DURATION)
     def get_timezones(_self) -> List[Dict]:
@@ -89,20 +106,26 @@ class APISportsClient:
         if week:
             params["week"] = week
             
-        return _self._make_request("fixtures", params) or []
+        return _self._make_request("games", params) or []
     
     @st.cache_data(ttl=60)  # Shorter cache for live data
     def get_game_events(_self, game_id: int) -> List[Dict]:
         """Get events for a specific game"""
         params = {"fixture": game_id}
-        return _self._make_request("fixtures/events", params) or []
+        return _self._make_request("games/events", params) or []
     
     @st.cache_data(ttl=Config.CACHE_DURATION)
     def get_team_statistics(_self, league: int, season: int, team: int) -> Dict:
         """Get team statistics for a season"""
         params = {"league": league, "season": season, "team": team}
         result = _self._make_request("teams/statistics", params)
-        return result[0] if result else {}
+        # Handle both dict and list responses
+        if isinstance(result, list) and len(result) > 0:
+            return result[0]
+        elif isinstance(result, dict):
+            return result
+        else:
+            return {}
     
     @st.cache_data(ttl=Config.CACHE_DURATION)
     def get_player_statistics(_self, league: int, season: int, 
@@ -120,7 +143,7 @@ class APISportsClient:
     def get_game_player_statistics(_self, game_id: int) -> Dict:
         """Get player statistics for a specific game"""
         params = {"fixture": game_id}
-        return _self._make_request("fixtures/players", params) or {}
+        return _self._make_request("games/players", params) or {}
     
     @st.cache_data(ttl=Config.CACHE_DURATION)
     def get_injuries(_self, league: int, season: int, team: int = None) -> List[Dict]:
@@ -172,4 +195,3 @@ class APISportsClient:
         except Exception as e:
             st.warning(f"Error formatting datetime: {e}")
             return dt_string
-
