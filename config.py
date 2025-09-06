@@ -37,3 +37,4 @@ class Config:
     @classmethod
     def get_base_url(cls):
         return cls.API_SPORTS_BASE_URL
+    

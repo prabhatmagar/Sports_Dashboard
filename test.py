@@ -1,26 +1,38 @@
-import os
-import requests
-from datetime import datetime
+# test_games_api.py
 
-API_KEY = os.getenv("API_SPORTS_KEY")
-BASE_URL = "https://v1.american-football.api-sports.io/"
-HEADERS = {
-    "X-RapidAPI-Key": API_KEY,
-    "X-RapidAPI-Host": "v1.american-football.api-sports.io"
-}
+from api_client import APISportsClient
+import json
+from datetime import datetime, timezone
 
-def get_games(league: int = 1, season: int = 2023, date: str = None):
-    """Fetch NFL/NCAA games from API-Sports and return list of game dicts"""
-    url = f"{BASE_URL}games"
-    params = {"league": league, "season": season}
-    if date:
-        params["date"] = date
+def main():
+    client = APISportsClient()
 
-    try:
-        resp = requests.get(url, headers=HEADERS, params=params)
-        resp.raise_for_status()
-        data = resp.json()
-        return [item["game"] for item in data.get("response", []) if "game" in item]
-    except requests.exceptions.RequestException as e:
-        print(f"API Request Error: {e}")
-        return []
+    # Replace league and season as needed
+    league_id = 1  # NFL
+    season = 2025  # current season
+
+    print(f"Fetching games for league={league_id}, season={season}...\n")
+
+    raw_data = client.get_games(league=league_id, season=season)
+
+    if not raw_data:
+        print("No games returned by API.")
+        return
+
+    print(f"Total games returned: {len(raw_data)}\n")
+
+    # Print the first 5 raw game entries
+    for i, game in enumerate(raw_data[:5], 1):
+        print(f"--- Game {i} ---")
+        print(json.dumps(game, indent=4))
+        print("\n")
+
+    # Optional: list all game dates to check recent/upcoming
+    print("Game dates (UTC):")
+    for game in raw_data:
+        date_str = game.get("date", {}).get("date", "N/A")
+        status = game.get("status", {}).get("short", "N/A")
+        print(f"{date_str} | Status: {status}")
+
+if __name__ == "__main__":
+    main()
