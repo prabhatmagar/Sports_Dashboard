@@ -27,7 +27,7 @@ class Config:
     NCAA_LEAGUE_ID = 2
 
     @classmethod
-    def get_headers(cls, use_rapidapi: bool = False):
+    def get_headers(cls):
         if cls.API_SPORTS_KEY and cls.API_SPORTS_KEY != "your_api_sports_key_here":
             return {"x-apisports-key": cls.API_SPORTS_KEY}
         else:
@@ -35,5 +35,5 @@ class Config:
             return None
 
     @classmethod
-    def get_base_url(cls, use_rapidapi: bool = False):
+    def get_base_url(cls):
         return cls.API_SPORTS_BASE_URL
