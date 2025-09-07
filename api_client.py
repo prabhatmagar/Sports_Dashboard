@@ -25,7 +25,6 @@ class APISportsClient:
             response.raise_for_status()
             data = response.json()
             resp = data.get("response", [])
-            # filter out invalid entries
             return [d for d in resp if isinstance(d, dict)]
         except requests.RequestException as e:
             st.error(f"Error fetching standings: {e}")
@@ -53,12 +52,8 @@ class APISportsClient:
         except Exception:
             return dt_str
 
-
-            
-
     def get_teams(self, league: int, season: int):
-        """Fetch all teams for a given league and season."""
-        url = f"{self.base_url}/teams"  # <-- lowercase
+        url = f"{self.base_url}/teams"
         params = {"league": league, "season": season}
         response = requests.get(url, headers=self.headers, params=params)
         data = response.json()
@@ -66,9 +61,7 @@ class APISportsClient:
             raise Exception(f"API Error: {data['errors']}")
         return data.get("response", [])
 
-    
     def get_players(self, team: int, season: int):
-        """Fetch all players for a given team and season."""
         url = f"{self.base_url}/players"
         params = {"team": team, "season": season}
         response = requests.get(url, headers=self.headers, params=params)
@@ -78,7 +71,6 @@ class APISportsClient:
         return data.get("response", [])
 
     def get_player_statistics(self, player_id: int, season: int):
-        """Fetch season statistics for a player."""
         url = f"{self.base_url}/players/statistics"
         params = {"id": player_id, "season": season}
         response = requests.get(url, headers=self.headers, params=params)
@@ -86,3 +78,24 @@ class APISportsClient:
         if data.get("errors"):
             raise Exception(f"API Error: {data['errors']}")
         return data.get("response", [])
+
+    # ----- New method for Odds -----
+    def get_odds(self, league_id: int, season: int, date: str = None):
+        """
+        Fetch pre-match odds for games. Optional date filter.
+        """
+        url = f"{self.base_url}/odds"
+        params = {"league": league_id, "season": season}
+        if date:
+            params["date"] = date
+        try:
+            response = requests.get(url, headers=self.headers, params=params, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+            if data.get("errors"):
+                st.warning(f"Odds API returned errors: {data['errors']}")
+                return []
+            return data.get("response", [])
+        except requests.RequestException as e:
+            st.error(f"Error fetching odds: {e}")
+            return []

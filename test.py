@@ -1,24 +1,39 @@
-# test_player_stats.py
-import pprint
+from datetime import datetime, timezone
 from api_client import APISportsClient
 
-def main():
-    api_client = APISportsClient()
+client = APISportsClient()
+season = client.get_current_season()
 
-    # Replace with a real player ID and season
-    player_id = 8          # Example: Sincere McCormick
-    season = 2024          # Example: current season
+# Fetch all games
+games = client.get_games(league=1, season=season)
 
+now = datetime.now(timezone.utc)
+live_upcoming_games = []
+
+for g in games:
+    status = g.get("game", {}).get("status", {}).get("short", "")
+    date_info = g.get("game", {}).get("date", {})
     try:
-        stats = api_client.get_players(player_id,season)
-        
-        if stats:
-            print(f"Statistics for player ID {player_id} (Season {season}):")
-            pprint.pprint(stats)
-        else:
-            print(f"No statistics found for player ID {player_id} in season {season}.")
-    except Exception as e:
-        print(f"Error fetching stats: {e}")
+        game_dt = datetime.strptime(f"{date_info['date']} {date_info['time']}", "%Y-%m-%d %H:%M")
+        game_dt = game_dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        continue
+    if status == "LIVE" or (game_dt > now and status != "FT"):
+        live_upcoming_games.append(g)
 
-if __name__ == "__main__":
-    main()
+# Test odds for these games
+for i, g in enumerate(live_upcoming_games[:5]):
+    game_id = g.get("game", {}).get("id")
+    if not game_id:
+        print(f"Game {i+1}: no game id")
+        continue
+
+    print(f"Game {i+1} (id={game_id}) odds:")
+    try:
+        odds = client.get_odds(game_id, season)
+        if odds:
+            print(odds)
+        else:
+            print("💰 Odds: N/A")
+    except Exception as e:
+        print(f"Error fetching odds: {e}")

@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 from api_client import APISportsClient
 from config import Config
 
-# Load environment variables
 load_dotenv()
 
 def main():
@@ -28,11 +27,10 @@ def main():
 
         date_option = st.radio("Date Range", ["Today", "This Week", "Custom Date"])
         today = datetime.now()
+        selected_date = None
         if date_option == "Today":
             selected_date = today.strftime("%Y-%m-%d")
-        elif date_option == "This Week":
-            selected_date = None
-        else:
+        elif date_option == "Custom Date":
             selected_date = st.date_input("Select Date", today).strftime("%Y-%m-%d")
         st.button("Apply Filters")
 
@@ -64,18 +62,20 @@ def main():
         if not game_info or not teams or not bookmakers:
             continue
 
-        # Game card
         with st.container():
-            st.markdown("<div style='background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:1px 1px 5px #ddd;'>", unsafe_allow_html=True)
+            st.markdown(
+                "<div style='background-color:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:1px 1px 5px #ddd;'>",
+                unsafe_allow_html=True
+            )
             st.write(f"**{teams.get('away', {}).get('name','TBD')} vs {teams.get('home', {}).get('name','TBD')}**")
             cols = st.columns(3)
-            cols[0].write(f"📅 {api_client.format_datetime(game_info.get('date', ''), Config.DEFAULT_TIMEZONE)}")
-            cols[1].write(f"🏟️ {game_info.get('venue', {}).get('name', 'TBD')}")
-            status = game_info.get('status', {}).get('short', 'NS')
+            cols[0].write(f"📅 {api_client.format_datetime(game_info.get('date',''), Config.DEFAULT_TIMEZONE)}")
+            cols[1].write(f"🏟️ {game_info.get('venue', {}).get('name','TBD')}")
+            status = game_info.get('status', {}).get('short','NS')
             status_emoji = {'NS':'⏰','LIVE':'🔴','FT':'✅'}.get(status,'❓')
             cols[2].write(f"{status_emoji} {status}")
 
-            # Bookmakers odds (collapsed)
+            # Bookmakers odds
             for bookmaker in bookmakers:
                 name = bookmaker.get('name','Unknown')
                 bets = bookmaker.get('bets', [])
@@ -87,30 +87,29 @@ def main():
                             continue
                         st.write(f"**{bet_name}**")
                         if len(values) <= 3:
-                            bet_cols = st.columns(len(values))
+                            cols_bet = st.columns(len(values))
                             for i, val in enumerate(values):
-                                with bet_cols[i]:
+                                with cols_bet[i]:
                                     st.write(val.get('value',''))
                                     st.write(f"**{val.get('odd','N/A')}**")
                         else:
                             df = pd.DataFrame([{'Option':v.get('value',''),'Odds':v.get('odd','N/A')} for v in values])
-                            st.dataframe(df, use_container_width=True)
+                            st.table(df)
+
             st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Analytics Section ---
     st.subheader("📈 Analytics")
-
     # Bookmaker coverage
     bookmaker_counts = {}
     for odds in odds_data:
         for b in odds.get('bookmakers', []):
             name = b.get('name','Unknown')
             bookmaker_counts[name] = bookmaker_counts.get(name,0)+1
-
     if bookmaker_counts:
         df_bookmakers = pd.DataFrame([{'Bookmaker':k,'Games Covered':v} for k,v in bookmaker_counts.items()])
         col1, col2 = st.columns(2)
-        col1.dataframe(df_bookmakers, use_container_width=True)
+        col1.table(df_bookmakers)
         fig1 = px.pie(df_bookmakers, values='Games Covered', names='Bookmaker', title="Games Coverage by Bookmaker")
         col2.plotly_chart(fig1, use_container_width=True)
 
@@ -120,7 +119,6 @@ def main():
         for b in odds.get('bookmakers', []):
             for bet in b.get('bets', []):
                 bet_types[bet.get('name','Unknown')] = bet_types.get(bet.get('name','Unknown'),0)+1
-
     if bet_types:
         df_bets = pd.DataFrame([{'Bet Type':k,'Count':v} for k,v in bet_types.items()]).sort_values('Count',ascending=False)
         fig2 = px.bar(df_bets, x='Count', y='Bet Type', orientation='h', title="Most Popular Bet Types")
