@@ -13,11 +13,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # Custom CSS
 st.markdown("""
 <style>
-
     .main-header {
         font-size: 3rem;
         font-weight: bold;
@@ -52,27 +50,27 @@ def main():
 
     # Home page content
     st.markdown("## Welcome to the Sports Dashboard! 🏈")
-    st.markdown("Your comprehensive source for NFL and NCAA football data, statistics, and insights.")
+    st.markdown("Your comprehensive source for NFL and NCAA football data, live scores, player insights, standings, and betting odds.")
 
     # Quick stats overview
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("🏈 Leagues", "2", help="NFL and NCAA coverage")
-    col2.metric("📊 Data Points", "10+", help="Games, standings, teams, players, odds")
+    col2.metric("📊 Data Points", "10+", help="Games, standings, players, odds")
     col3.metric("⚡ Real-time", "Live", help="Live scores and updates")
     col4.metric("📈 Analytics", "Advanced", help="Comprehensive statistics and visualizations")
 
     st.markdown("---")
 
-# ----- Features overview without Teams -----
+    # Features overview
     st.markdown("### 🚀 Features")
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("""
-        **🏈 Games & Schedule**
+        **🏈 Games & Odds**
         - Live scores and game status
         - Schedule by date and week
-        - Game details and venue info
-        - Real-time updates
+        - Venue and timing info
+        - Real-time **betting odds** (compare bookmakers)
         """)
         st.markdown("""
         **📊 Standings**
@@ -89,13 +87,6 @@ def main():
         - Injury reports
         - Performance metrics
         """)
-        st.markdown("""
-        **💰 Odds & Betting**
-        - Moneyline, spread, and totals
-        - Multiple bookmaker comparison
-        - Market analysis
-        - Real-time odds updates
-        """)
 
     st.markdown("---")
 
@@ -104,9 +95,9 @@ def main():
     st.markdown("""
     1. **Select a League**: Choose between NFL or NCAA  
     2. **Pick a Season**: View current or historical seasons  
-    3. **Explore Data**: Navigate through different sections using the sidebar  
-    4. **Filter & Search**: Use filters to find specific information  
-    5. **Analyze**: View charts, tables, and detailed statistics  
+    3. **Navigate**: Use the sidebar to switch between *Games*, *Players*, and *Standings*  
+    4. **Explore**: Filter and search for detailed insights  
+    5. **Analyze**: Use charts, tables, and odds comparisons for deeper understanding  
     """)
 
 if __name__ == "__main__":

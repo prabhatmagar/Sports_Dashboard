@@ -99,3 +99,20 @@ class APISportsClient:
         except requests.RequestException as e:
             st.error(f"Error fetching odds: {e}")
             return []
+
+    def get_bets(self):
+        """
+        Return the list of available bets (market types).
+        """
+        url = f"{self.base_url}/odds/bets"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+            if data.get("errors"):
+                st.warning(f"Bets API returned errors: {data['errors']}")
+                return []
+            return data.get("response", [])
+        except requests.RequestException as e:
+            st.error(f"Error fetching bets: {e}")
+            return []

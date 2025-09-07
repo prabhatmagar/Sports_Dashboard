@@ -11,6 +11,7 @@ from config import Config
 load_dotenv()
 st.set_page_config(page_title="📊 League Standings", layout="wide")
 
+
 def main():
     st.title("📊 League Standings")
     st.markdown(
@@ -40,13 +41,12 @@ def main():
     standings = []
     for entry in raw_data:
         if not isinstance(entry, dict):
-            continue  # skip invalid entries
+            continue
         try:
             standings.append(Standing.from_api_data(entry))
         except Exception as e:
             st.error(f"Error parsing standing: {e}")
 
-    # --- Handle future/no-data seasons ---
     if not standings or all((s.points or 0) == 0 for s in standings):
         st.warning("⚠️ Standings data not yet available for this season.")
         return
@@ -78,9 +78,8 @@ def main():
 
     # --- Tabs by Conference ---
     if selected_league == "NFL":
-        conference_tabs = ["American Football Conference", "National Football Conference"]  # force only 2 tabs
+        conference_tabs = ["American Football Conference", "National Football Conference"]
     else:
-        # dynamically get all unique conferences for NCAA
         conference_tabs = sorted(set(s.conference for s in standings if s.conference))
 
     tab_objects = st.tabs(conference_tabs)
@@ -93,18 +92,31 @@ def main():
                 continue
 
             df = DataProcessor.standings_to_dataframe(conf_standings)
+
+            # --- Sort by Points descending ---
+            if "Points" in df.columns:
+                df = df.sort_values(by="Points", ascending=False)
+
+            # --- Add Rank column if not exists ---
+            if "Rank" not in df.columns:
+                df.insert(0, "Rank", range(1, len(df) + 1))
+
+            # --- Remove default index completely ---
+            df_display = df.copy()
+            df_display.index = [""] * len(df_display)  # blank index
+
             st.subheader(f"{conf} Conference Standings")
-            st.dataframe(df, use_container_width=True, height=500)
+            st.table(df_display)  # table completely hides index
 
             # --- Charts ---
             if len(conf_standings) > 1:
-                teams = [s.team_name for s in conf_standings]
+                teams = df["Team"].tolist()
 
                 col1, col2 = st.columns(2)
                 with col1:
                     fig = px.bar(
                         x=teams,
-                        y=[max(s.points, 0) for s in conf_standings],  # ensure non-negative
+                        y=df["Points"],
                         title="Total Points by Team",
                         labels={"x": "Team", "y": "Points"},
                         text_auto=True,
@@ -127,17 +139,17 @@ def main():
                     fig2.update_xaxes(tickangle=45)
                     st.plotly_chart(fig2, use_container_width=True)
 
-                # Scatter plot with positive-only marker size
                 fig3 = px.scatter(
                     x=[s.all_goals_for for s in conf_standings],
                     y=[s.all_goals_against for s in conf_standings],
-                    size=[max(s.points, 0) for s in conf_standings],  # avoid negatives
+                    size=[max(s.points, 0) for s in conf_standings],
                     text=teams,
                     title="Goals For vs Goals Against (Bubble Size = Points)",
                     labels={"x": "Goals For", "y": "Goals Against"},
                 )
                 fig3.update_traces(textposition="top center")
                 st.plotly_chart(fig3, use_container_width=True)
+
 
 if __name__ == "__main__":
     main()

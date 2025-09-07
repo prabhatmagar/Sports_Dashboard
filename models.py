@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 import pandas as pd
+from datetime import datetime
 
 @dataclass
 class Game:
@@ -9,7 +10,7 @@ class Game:
     home_score: Optional[int]
     away_score: Optional[int]
     venue: str
-    date: str
+    date: str  # raw API date string (e.g., "2025-09-07T17:00Z")
     status: str
     scores: Dict
     home_logo: Optional[str] = None
@@ -21,9 +22,16 @@ class Game:
         away = data.get("teams", {}).get("away", {})
         scores = data.get("scores", {})
         date_info = data.get("date", {})
-        game_date = date_info.get("date", "") + "T" + date_info.get("time", "") + "Z"
+
+        # API usually returns separate date + time
+        if date_info.get("date") and date_info.get("time"):
+            game_date = f"{date_info.get('date')}T{date_info.get('time')}Z"
+        else:
+            game_date = ""
+
         venue_info = data.get("venue", {})
         venue = f"{venue_info.get('name', 'Unknown')}, {venue_info.get('city', '')}"
+
         return Game(
             home_team=home.get("name", "N/A"),
             away_team=away.get("name", "N/A"),
@@ -36,6 +44,17 @@ class Game:
             home_logo=home.get("logo"),
             away_logo=away.get("logo")
         )
+
+    @property
+    def parsed_date(self) -> Optional[datetime]:
+        """Safely parse ISO date with Zulu UTC support."""
+        if not self.date:
+            return None
+        try:
+            return datetime.fromisoformat(self.date.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        
 
 @dataclass
 class Standing:
