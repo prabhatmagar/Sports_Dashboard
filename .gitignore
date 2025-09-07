@@ -149,3 +149,6 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+
+test.py

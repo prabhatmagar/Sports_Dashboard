@@ -52,3 +52,37 @@ class APISportsClient:
             return dt_local.strftime("%Y-%m-%d %H:%M %Z")
         except Exception:
             return dt_str
+
+
+            
+
+    def get_teams(self, league: int, season: int):
+        """Fetch all teams for a given league and season."""
+        url = f"{self.base_url}/teams"  # <-- lowercase
+        params = {"league": league, "season": season}
+        response = requests.get(url, headers=self.headers, params=params)
+        data = response.json()
+        if data.get("errors"):
+            raise Exception(f"API Error: {data['errors']}")
+        return data.get("response", [])
+
+    
+    def get_players(self, team: int, season: int):
+        """Fetch all players for a given team and season."""
+        url = f"{self.base_url}/players"
+        params = {"team": team, "season": season}
+        response = requests.get(url, headers=self.headers, params=params)
+        data = response.json()
+        if data.get("errors"):
+            raise Exception(f"API Error: {data['errors']}")
+        return data.get("response", [])
+
+    def get_player_statistics(self, player_id: int, season: int):
+        """Fetch season statistics for a player."""
+        url = f"{self.base_url}/players/statistics"
+        params = {"id": player_id, "season": season}
+        response = requests.get(url, headers=self.headers, params=params)
+        data = response.json()
+        if data.get("errors"):
+            raise Exception(f"API Error: {data['errors']}")
+        return data.get("response", [])

@@ -63,7 +63,7 @@ def main():
 
     st.markdown("---")
 
-    # Features overview
+# ----- Features overview without Teams -----
     st.markdown("### 🚀 Features")
     col1, col2 = st.columns(2)
     with col1:
@@ -83,26 +83,19 @@ def main():
         """)
     with col2:
         st.markdown("""
-        **🏟️ Teams**
-        - Team statistics and performance
-        - Season records and metrics
-        - Team comparison tools
-        - Historical data
-        """)
-        st.markdown("""
         **👥 Players**
         - Player profiles and statistics
         - Position-based analysis
         - Injury reports
         - Performance metrics
         """)
-    st.markdown("""
-    **💰 Odds & Betting**
-    - Moneyline, spread, and totals
-    - Multiple bookmaker comparison
-    - Market analysis
-    - Real-time odds updates
-    """)
+        st.markdown("""
+        **💰 Odds & Betting**
+        - Moneyline, spread, and totals
+        - Multiple bookmaker comparison
+        - Market analysis
+        - Real-time odds updates
+        """)
 
     st.markdown("---")
 

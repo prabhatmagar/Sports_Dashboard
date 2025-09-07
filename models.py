@@ -85,6 +85,36 @@ class Standing:
 
 
 
+# models.py
+
+class Player:
+    def __init__(self, id, name, team_name=None, position=None, photo=None, age=None, height=None, weight=None):
+        self.id = id
+        self.name = name
+        self.team_name = team_name
+        self.position = position
+        self.photo = photo or "https://via.placeholder.com/100"
+        self.age = age
+        self.height = height
+        self.weight = weight
+        self.stats = []
+        self.injured = False
+
+    @classmethod
+    def from_api_data(cls, data):
+        """Convert API response to Player object."""
+        player_info = data.get("player") or {}
+        team_info = data.get("team") or {}
+        return cls(
+            id=player_info.get("id"),
+            name=player_info.get("name"),
+            team_name=team_info.get("name"),
+            position=player_info.get("position"),
+            photo=player_info.get("photo"),
+            age=player_info.get("age"),
+            height=player_info.get("height"),
+            weight=player_info.get("weight")
+        )
 
 
 class DataProcessor:

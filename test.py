@@ -1,38 +1,24 @@
-# test_games_api.py
-
+# test_player_stats.py
+import pprint
 from api_client import APISportsClient
-import json
-from datetime import datetime, timezone
 
 def main():
-    client = APISportsClient()
+    api_client = APISportsClient()
 
-    # Replace league and season as needed
-    league_id = 1  # NFL
-    season = 2025  # current season
+    # Replace with a real player ID and season
+    player_id = 8          # Example: Sincere McCormick
+    season = 2024          # Example: current season
 
-    print(f"Fetching games for league={league_id}, season={season}...\n")
-
-    raw_data = client.get_games(league=league_id, season=season)
-
-    if not raw_data:
-        print("No games returned by API.")
-        return
-
-    print(f"Total games returned: {len(raw_data)}\n")
-
-    # Print the first 5 raw game entries
-    for i, game in enumerate(raw_data[:5], 1):
-        print(f"--- Game {i} ---")
-        print(json.dumps(game, indent=4))
-        print("\n")
-
-    # Optional: list all game dates to check recent/upcoming
-    print("Game dates (UTC):")
-    for game in raw_data:
-        date_str = game.get("date", {}).get("date", "N/A")
-        status = game.get("status", {}).get("short", "N/A")
-        print(f"{date_str} | Status: {status}")
+    try:
+        stats = api_client.get_players(player_id,season)
+        
+        if stats:
+            print(f"Statistics for player ID {player_id} (Season {season}):")
+            pprint.pprint(stats)
+        else:
+            print(f"No statistics found for player ID {player_id} in season {season}.")
+    except Exception as e:
+        print(f"Error fetching stats: {e}")
 
 if __name__ == "__main__":
     main()
