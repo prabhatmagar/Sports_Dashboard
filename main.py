@@ -1,13 +1,18 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load secrets (from .streamlit/secrets.toml on Streamlit Cloud)
+API_KEY = st.secrets.get("API_SPORTS_KEY", None)
+BASE_URL = st.secrets.get("API_SPORTS_BASE_URL", "https://v1.american-football.api-sports.io/")
+
+# App config values
+APP_TITLE = st.secrets.get("APP_TITLE", "Sports Dashboard")
+DEFAULT_TIMEZONE = st.secrets.get("DEFAULT_TIMEZONE", "US/Eastern")
+CACHE_DURATION = st.secrets.get("CACHE_DURATION", 300)
 
 # Page configuration
 st.set_page_config(
-    page_title="Sports Dashboard",
+    page_title=APP_TITLE,
     page_icon="🏈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -40,12 +45,11 @@ st.markdown("""
 
 def main():
     # Main header
-    st.markdown('<h1 class="main-header">🏈 Sports Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="main-header">🏈 {APP_TITLE}</h1>', unsafe_allow_html=True)
 
     # Check if API key is configured
-    api_key = os.getenv('API_SPORTS_KEY') or os.getenv('RAPIDAPI_KEY')
-    if not api_key:
-        st.error("⚠️ No API key configured. Please set API_SPORTS_KEY or RAPIDAPI_KEY in your .env file")
+    if not API_KEY:
+        st.error("⚠️ No API key configured. Please set API_SPORTS_KEY in your Streamlit secrets.")
         return
 
     # Home page content
@@ -92,12 +96,14 @@ def main():
 
     # Quick start guide
     st.markdown("### 🎯 Quick Start")
-    st.markdown("""
+    st.markdown(f"""
     1. **Select a League**: Choose between NFL or NCAA  
     2. **Pick a Season**: View current or historical seasons  
     3. **Navigate**: Use the sidebar to switch between *Games*, *Players*, and *Standings*  
     4. **Explore**: Filter and search for detailed insights  
     5. **Analyze**: Use charts, tables, and odds comparisons for deeper understanding  
+
+    ⚙️ *Default timezone: {DEFAULT_TIMEZONE}, Cache duration: {CACHE_DURATION}s*
     """)
 
 if __name__ == "__main__":

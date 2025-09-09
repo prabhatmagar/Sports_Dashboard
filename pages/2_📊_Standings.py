@@ -3,13 +3,13 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from dotenv import load_dotenv
 from api_client import APISportsClient
 from models import Standing, DataProcessor
-from config import Config
 
-load_dotenv()
-
+# Load from secrets.toml (with safe defaults)
+NFL_LEAGUE_ID = st.secrets.get("NFL_LEAGUE_ID", 1)      # update with correct ID
+NCAA_LEAGUE_ID = st.secrets.get("NCAA_LEAGUE_ID", 2)    # update with correct ID
+APP_TITLE = st.secrets.get("APP_TITLE", "Sports Dashboard")
 
 def main():
     st.title("📊 League Standings")
@@ -22,7 +22,7 @@ def main():
     # --- Sidebar filters ---
     with st.sidebar:
         st.header("⚙️ Filters")
-        leagues = {"NFL": Config.NFL_LEAGUE_ID, "NCAA": Config.NCAA_LEAGUE_ID}
+        leagues = {"NFL": NFL_LEAGUE_ID, "NCAA": NCAA_LEAGUE_ID}
         selected_league = st.selectbox("Select League", list(leagues.keys()))
         league_id = leagues[selected_league]
 

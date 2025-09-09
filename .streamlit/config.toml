@@ -16,3 +16,11 @@ backgroundColor = "#ffffff"
 secondaryBackgroundColor = "#f0f2f6"
 textColor = "#262730"
 font = "sans serif"
+
+
+# .streamlit/config.toml
+
+[app]
+title = "Sports Dashboard"
+default_timezone = "US/Eastern"
+cache_duration = 300
