@@ -16,6 +16,18 @@ class APISportsClient:
 
     def get_current_season(self):
         return datetime.now().year
+        
+    def get_seasons(self):
+        """
+        Fetch all available seasons from the API.
+        """
+        url = f"{self.base_url}/seasons"
+        response = requests.get(url, headers=self.headers)
+        data = response.json()
+        if data.get("errors"):
+            raise Exception(f"API Error: {data['errors']}")
+        return data.get("response", [])
+
 
     def get_standings(self, league_id, season):
         url = f"{self.base_url}standings"

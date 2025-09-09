@@ -10,12 +10,12 @@ def get_api_client():
 
 @st.cache_data(show_spinner=False)
 def fetch_teams(_api_client, league, season):
-    try:
+    # try:
         teams_data = _api_client.get_teams(league=league, season=season)
         return {t["id"]: t["name"] for t in teams_data}
-    except Exception as e:
-        st.error(f"Error fetching teams: {e}")
-        return {}
+    # except Exception as e:
+    #     st.error(f"Error fetching teams: {e}")
+    #     return {}
 
 @st.cache_data(show_spinner=False)
 def fetch_players(_api_client, teams_dict, season, selected_team_id=None, search_name=None):
@@ -144,17 +144,27 @@ def main():
 
     current_season = api_client.get_current_season()
     seasons = list(range(current_season - 2, current_season + 1))
-    selected_season = st.sidebar.selectbox("Season", seasons, index=len(seasons)-1)
+    selected_season = st.sidebar.selectbox("Season", seasons, index=len(seasons) - 1)
 
-    # Fetch teams
+    # --- Fetch teams safely ---
     teams_dict = fetch_teams(api_client, league_id, selected_season)
 
-    # Check if a player is selected
+    if not teams_dict:
+        if selected_season > 2000:
+            selected_season -= 1
+            teams_dict = fetch_teams(api_client, league_id, selected_season)
+
+
+    # --- Player profile or directory ---
     if "selected_player" in st.session_state:
         render_profile(st.session_state["selected_player"], selected_season)
     else:
         players = fetch_players(api_client, teams_dict, selected_season)
-        render_directory(players, teams_dict, selected_season)
+        if not players:
+            st.info(f"No players available for season {selected_season}.")
+        else:
+            render_directory(players, teams_dict, selected_season)
+
 
 if __name__ == "__main__":
     main()

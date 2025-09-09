@@ -9,7 +9,6 @@ from models import Standing, DataProcessor
 from config import Config
 
 load_dotenv()
-st.set_page_config(page_title="📊 League Standings", layout="wide")
 
 
 def main():

@@ -9,7 +9,7 @@ from api_client import APISportsClient
 from config import Config
 from models import Game as GameModel  # your dataclass (with parsed_date property)
 
-st.set_page_config(page_title="🏈 Games & Odds", layout="wide")
+
 st.title("🏈 Games & Odds")
 st.write("View NFL/NCAA games, live scores, schedules, stats, and betting odds")
 
