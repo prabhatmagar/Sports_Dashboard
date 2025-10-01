@@ -7,10 +7,10 @@ load_dotenv()
 
 class Config:
     # API Configuration
-    API_SPORTS_KEY = os.getenv("6a0f7b7a1a47216c3c085080c82b406e")
+    API_SPORTS_KEY = os.getenv("API_SPORTS_KEY")
     API_SPORTS_BASE_URL = os.getenv(
         "API_SPORTS_BASE_URL",
-        "https://v1.afl.api-sports.io/"
+        "https://v1.american-football.api-sports.io/"
     )
 
     # Force trailing slash
@@ -28,7 +28,7 @@ class Config:
 
     @classmethod
     def get_headers(cls):
-        if cls.API_SPORTS_KEY and cls.API_SPORTS_KEY != "your_api_here":
+        if cls.API_SPORTS_KEY and cls.API_SPORTS_KEY != "your_api_sports_key_here":
             return {"x-apisports-key": cls.API_SPORTS_KEY}
         else:
             st.error("No API key configured. Please set API_SPORTS_KEY in your .env file")
