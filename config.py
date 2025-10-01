@@ -10,7 +10,7 @@ class Config:
     API_SPORTS_KEY = os.getenv("6a0f7b7a1a47216c3c085080c82b406e")
     API_SPORTS_BASE_URL = os.getenv(
         "API_SPORTS_BASE_URL",
-        "https://v1.american-football.api-sports.io/"
+        "https://v1.afl.api-sports.io/"
     )
 
     # Force trailing slash
