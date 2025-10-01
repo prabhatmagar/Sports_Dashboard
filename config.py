@@ -28,7 +28,7 @@ class Config:
 
     @classmethod
     def get_headers(cls):
-        if cls.API_SPORTS_KEY and cls.API_SPORTS_KEY != "your_api_sports_key_here":
+        if cls.API_SPORTS_KEY and cls.API_SPORTS_KEY != "6a0f7b7a1a47216c3c085080c82b406e":
             return {"x-apisports-key": cls.API_SPORTS_KEY}
         else:
             st.error("No API key configured. Please set API_SPORTS_KEY in your .env file")
